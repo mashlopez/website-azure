@@ -1,0 +1,10 @@
+{
+  "name": "mon-site-statique",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "echo 'Building project...'", // ou une vraie commande comme "vite build" ou "next build"
+    "start": "serve dist"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

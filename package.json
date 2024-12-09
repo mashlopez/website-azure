@@ -2,7 +2,7 @@
   "name": "website-azure",
   "version": "1.0.0",
   "scripts": {
-    "build": "echo 'Building project...'", // ou une vraie commande comme "vite build" ou "next build"
+    "build": "echo 'vite Build'",
     "start": "serve dist"
   },
   "dependencies": {},

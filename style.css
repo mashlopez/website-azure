@@ -1,4 +1,4 @@
- * {
+* {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -7,22 +7,23 @@
 
         /* Body */
         body {
-            background-color: #f4f4f4; /* Gris clair */
-            color: #333; /* Gris anthracite pour le texte */
+            background-color: #d9d9d9; /* Gris clair */
+            color: #333333; /* Gris anthracite pour le texte */
             line-height: 1.6;
         }
 
         /* Bannière */
         header {
             background-color: #1e1e1e; /* Gris anthracite */
-            color: #ffffff;
+            color: #e67e22; /* Orange */
             text-align: center;
             padding: 20px 10px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
         }
 
         header h1 {
-            font-size: 2.5em;
+            font-size: 2.8em;
+            font-weight: bold;
             text-transform: uppercase;
         }
 
@@ -31,15 +32,15 @@
             max-width: 800px;
             margin: 30px auto;
             padding: 20px;
-            background: #ffffff;
-            border: 1px solid #ddd;
+            background: #ffffff; /* Fond blanc pour le contenu */
+            border: 1px solid #ccc;
             border-radius: 8px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
         h2 {
-            color: #e67e22; /* Orange */
-            border-bottom: 2px solid #3498db; /* Bleu */
+            color: #00aaff; /* Bleu azur */
+            border-bottom: 2px solid #00aaff; /* Soulignement en bleu azur */
             padding-bottom: 5px;
             margin-bottom: 15px;
             font-size: 1.8em;
@@ -48,13 +49,13 @@
         p {
             margin-bottom: 15px;
             font-size: 1.1em;
-            color: #333; /* Texte gris anthracite */
+            color: #333333; /* Texte gris anthracite */
         }
 
         /* Pied de page */
         footer {
             background-color: #1e1e1e; /* Gris anthracite */
-            color: #ffffff;
+            color: #e67e22; /* Orange */
             text-align: center;
             padding: 15px 10px;
             margin-top: 30px;
@@ -62,10 +63,9 @@
         }
 
         footer a {
-            color: #e67e22; /* Orange */
+            color: #00aaff; /* Bleu azur pour les liens */
             text-decoration: none;
         }
 
         footer a:hover {
             text-decoration: underline;
-        }

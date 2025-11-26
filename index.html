@@ -3,45 +3,288 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Frigarde</title>
-    <link href="style.css" rel="stylesheet">
+    <title>Machine à Compliments Absurdes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: #fff;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
+            transform: rotate(-1deg);
+            border: 5px solid #333;
+        }
+
+        h1 {
+            text-align: center;
+            color: #ff6b6b;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 3px 3px 0 #ffd93d;
+            animation: bounce 2s infinite;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+
+        .compliment-box {
+            background: #ffd93d;
+            border: 4px dashed #333;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+            min-height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .compliment-box::before {
+            content: '"';
+            position: absolute;
+            font-size: 120px;
+            color: rgba(0,0,0,0.1);
+            top: -20px;
+            left: 10px;
+        }
+
+        #compliment {
+            font-size: 1.5em;
+            text-align: center;
+            color: #333;
+            font-weight: bold;
+            line-height: 1.6;
+            position: relative;
+            z-index: 1;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        button {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+            border: 3px solid #333;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            background: #ff5252;
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        #addBtn {
+            background: #4ecdc4;
+        }
+
+        #addBtn:hover {
+            background: #45b7af;
+        }
+
+        .form-section {
+            background: #f0f0f0;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 3px solid #333;
+            display: none;
+        }
+
+        .form-section.active {
+            display: block;
+            animation: slideDown 0.3s;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            font-size: 1em;
+            border: 3px solid #333;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .stats {
+            text-align: center;
+            color: #666;
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .emoji {
+            font-size: 3em;
+            text-align: center;
+            margin: 20px 0;
+        }
+    </style>
 </head>
 <body>
-    <header>
-    <h1 class = fge>Frigarde</h1>
-        </header>
-    
-<main>
-        <h2>Le commencement</h2>
-        <p>Apparu il y a 10 000 ans, le grand <span class="fge">Frigarde</span> fonda le royaume éponyme dans un monde divisé en trois continents : 
-            le Continent de Feu, brûlant et aride ; le Continent de Glace, éternellement gelé ; et le Continent de Terre, fertile et verdoyant. 
-            <span class="fge">Frigarde</span>, un héros à la sagesse inégalée, traversa ces terres hostiles et rassembla les peuples sous un seul étendard. 
-            Né dans le Continent de Terre, où la vie prospérait sous le couvert des forêts ancestrales, <span class="fge">Frigarde</span> reçut très jeune une prophétie : 
-            il unirait les trois continents pour instaurer un âge d’équilibre et de paix.</p>
+    <div class="container">
+        <h1>🎭 Machine à Compliments Absurdes 🎭</h1>
+        <p class="subtitle">Parce que tu mérites des mots bizarres mais gentils</p>
+        
+        <div class="emoji">✨</div>
+        
+        <div class="compliment-box">
+            <p id="compliment">Clique sur le bouton pour recevoir ton compliment absurde !</p>
+        </div>
+        
+        <div class="button-container">
+            <button id="generateBtn">🎲 Nouveau Compliment</button>
+            <button id="addBtn">➕ Ajouter le tien</button>
+        </div>
+        
+        <div class="form-section" id="formSection">
+            <h3 style="margin-bottom: 15px; color: #333;">Ajoute ton propre compliment absurde :</h3>
+            <input type="text" id="customCompliment" placeholder="Ex: Ta logique est aussi claire qu'un arc-en-ciel sous la pluie">
+            <button onclick="addCustomCompliment()" style="width: 100%;">💾 Sauvegarder</button>
+        </div>
+        
+        <div class="stats">
+            <p>📊 Total de compliments disponibles : <span id="count">0</span></p>
+        </div>
+    </div>
 
-        <h2>L'âge d'or</h2>
-        <p>Armé de l'Épée des Éléments, forgée dans les flammes du Continent de Feu, refroidie par les vents glacés du Continent de Glace et bénie par les sages 
-            du Continent de Terre, <span class="fge">Frigarde</span> entreprit un voyage mythique.</p>
-        <p>Dans le Continent de Feu, il défia les Seigneurs des Flammes et dompta le volcan sacré, scellant une alliance avec les guerriers du brasier. 
-            Sur le Continent de Glace, il traversa les plaines glaciales et vainquit les monstres des glaces éternelles, gagnant la loyauté des clans du Nord. 
-            Enfin, sur le Continent de Terre, il érigea la Cité de Mylaris, un joyau de marbre et d'or, symbole de l'union des peuples. 
-            Ainsi débuta l’Âge d’Or, une époque où les trois continents, autrefois rivaux, œuvraient ensemble pour bâtir un monde prospère. Le commerce 
-            s’épanouit entre les terres de feu, de glace et de terre, les cultures s’entremêlèrent, et la légende de <span class="fge">Frigarde</span> grandit.</p>
+    <script>
+        const defaultCompliments = [
+            "Ton code est aussi élégant qu'un pingouin en smoking",
+            "Tu as l'énergie d'un écureuil sous caféine",
+            "Tes idées brillent comme des paillettes sur une licorne",
+            "Tu es aussi cool qu'un ananas avec des lunettes de soleil",
+            "Ta créativité rivalise avec celle d'un chat peignant des toiles",
+            "Tu as le charisme d'un croissant qui sort du four",
+            "Ton sourire illumine autant qu'une guirlande de Noël en juillet",
+            "Tu es aussi précieux qu'un dinosaure en peluche vintage",
+            "Ta sagesse égale celle d'un hibou qui fait du yoga",
+            "Tu as le style d'un flamant rose en tuxedo",
+            "Ton intelligence scintille comme du glitter sur une pizza",
+            "Tu es aussi fascinant qu'un cactus qui danse le tango",
+            "Ta gentillesse rivalise avec celle d'un nuage en forme de cœur",
+            "Tu as l'originalité d'une girafe portant un béret",
+            "Ton talent brille comme une boule disco dans une bibliothèque"
+        ];
 
-        <h2>La chute</h2>
-        <p>Mais l’harmonie fut éphémère. Après la mystérieuse disparition de <span class="fge">Frigarde</span>, les alliances fragiles se brisèrent. Les Seigneurs des Flammes réclamèrent 
-            à nouveau leur indépendance, les clans du Glace se replièrent dans leurs forteresses gelées, et le Continent de Terre sombra dans les luttes de pouvoir. 
-            Les trois continents, autrefois unis, se déchirèrent de nouveau, et la Cité de Mylaris fut abandonnée, ses rues devenant silencieuses comme une tombe.</p>
+        let compliments = [];
 
-        <h2>La légende de <span class="fge">Frigarde</span></h2>
-        <p>On raconte que <span class="fge">Frigarde</span> n'est pas mort, mais qu'il dort dans les profondeurs du Continent de Terre, son épée à ses côtés, attendant le jour où les trois 
-            continents l’appelleront. Quand les flammes menaceront de tout consumer, que la glace étendra son emprise éternelle et que la terre sera réduite en cendres, 
-            <span class="fge">Frigarde</span> reviendra.</p>
-        <p>Les sages disent que les enfants des trois continents devront s’unir pour réveiller le roi légendaire et restaurer l’équilibre. Ainsi, chaque génération scrute 
-            l'horizon, guettant un signe dans les flammes, les tempêtes de neige ou le frémissement des sols fertiles. Car l’esprit de <span class="fge">Frigarde</span> veille encore.</p>
-    </main>
-    <footer>
-        <p>© 2024 Frigarde. Hsitoire créée par ChatGPT. | <a href="https://github.com/">Contact</a> | <a href="#">À propos</a></p>
-    </footer>
+        function loadCompliments() {
+            const stored = sessionStorage.getItem('customCompliments');
+            const custom = stored ? JSON.parse(stored) : [];
+            compliments = [...defaultCompliments, ...custom];
+            updateCount();
+        }
+
+        function getRandomCompliment() {
+            return compliments[Math.floor(Math.random() * compliments.length)];
+        }
+
+        function displayCompliment() {
+            const complimentEl = document.getElementById('compliment');
+            complimentEl.classList.remove('fade-in');
+            
+            setTimeout(() => {
+                complimentEl.textContent = getRandomCompliment();
+                complimentEl.classList.add('fade-in');
+            }, 100);
+        }
+
+        function toggleForm() {
+            const form = document.getElementById('formSection');
+            form.classList.toggle('active');
+        }
+
+        function addCustomCompliment() {
+            const input = document.getElementById('customCompliment');
+            const value = input.value.trim();
+            
+            if (value) {
+                const stored = sessionStorage.getItem('customCompliments');
+                const custom = stored ? JSON.parse(stored) : [];
+                custom.push(value);
+                sessionStorage.setItem('customCompliments', JSON.stringify(custom));
+                
+                loadCompliments();
+                input.value = '';
+                alert('✨ Compliment ajouté avec succès ! Il est maintenant dans la rotation.');
+            }
+        }
+
+        function updateCount() {
+            document.getElementById('count').textContent = compliments.length;
+        }
+
+        document.getElementById('generateBtn').addEventListener('click', displayCompliment);
+        document.getElementById('addBtn').addEventListener('click', toggleForm);
+        document.getElementById('customCompliment').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addCustomCompliment();
+        });
+
+        loadCompliments();
+    </script>
 </body>
 </html>

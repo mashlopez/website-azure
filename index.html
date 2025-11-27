@@ -3,557 +3,414 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Citation Mystère : Le Duel des Auteurs</title>
+    <title>The Pattern-Shifter</title>
+    <!-- Tailwind CSS pour le style rapide et responsive -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome pour les icônes (formes) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            max-width: 800px;
-            width: 100%;
-            padding: 40px;
-            animation: fadeIn 0.5s;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        h1 {
-            color: #667eea;
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 2em;
-        }
-
-        .screen {
-            display: none;
-        }
-
-        .screen.active {
-            display: block;
-        }
-
-        .input-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 600;
-        }
-
-        input, select {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
-
-        input:focus, select:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Roboto', sans-serif;
+            background-color: #0f172a; /* Bleu nuit profond */
             color: white;
-            border: none;
-            padding: 14px 30px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            width: 100%;
-            margin-top: 10px;
+            overflow: hidden; /* Empêcher le scroll pendant le jeu */
+        }
+        
+        .cyber-font {
+            font-family: 'Orbitron', sans-serif;
         }
 
-        button:hover {
+        /* Animation d'apparition des éléments de la séquence */
+        .pop-in {
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            opacity: 0;
+            transform: scale(0.5);
+        }
+
+        @keyframes popIn {
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Effet de brillance néon */
+        .neon-box {
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+            transition: all 0.2s ease;
+        }
+        .neon-box:hover {
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.8);
             transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
         }
 
-        button:active {
-            transform: translateY(0);
-        }
-
-        .citation-box {
-            background: #f8f9fa;
-            border-left: 4px solid #667eea;
-            padding: 20px;
-            margin: 20px 0;
-            border-radius: 8px;
-            font-style: italic;
-            font-size: 1.2em;
-            color: #333;
-        }
-
-        .timer {
-            text-align: center;
-            font-size: 2em;
-            color: #667eea;
-            margin: 20px 0;
-            font-weight: bold;
-        }
-
-        .indices {
-            background: #fff3cd;
-            border: 2px solid #ffc107;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 20px 0;
-        }
-
-        .indices h3 {
-            color: #856404;
-            margin-bottom: 10px;
-        }
-
-        .indices p {
-            color: #856404;
-            line-height: 1.6;
-        }
-
-        .players-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin: 20px 0;
-        }
-
-        .player-tag {
-            background: #e7e7ff;
-            padding: 8px 16px;
-            border-radius: 20px;
-            color: #667eea;
-            font-weight: 600;
-        }
-
-        .scoreboard {
-            margin: 20px 0;
-        }
-
-        .score-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 12px;
-            background: #f8f9fa;
-            margin-bottom: 8px;
-            border-radius: 8px;
-            font-weight: 600;
-        }
-
-        .score-item.winner {
-            background: #d4edda;
-            border: 2px solid #28a745;
-        }
-
-        .answer-input-group {
-            display: flex;
-            gap: 10px;
-            margin: 20px 0;
-        }
-
-        .answer-input-group input {
-            flex: 1;
-        }
-
-        .answer-input-group button {
-            width: auto;
-            margin-top: 0;
-        }
-
-        .feedback {
-            padding: 15px;
-            border-radius: 8px;
-            margin: 15px 0;
-            font-weight: 600;
-            text-align: center;
-        }
-
-        .feedback.correct {
-            background: #d4edda;
-            color: #155724;
-            border: 2px solid #28a745;
-        }
-
-        .feedback.incorrect {
-            background: #f8d7da;
-            color: #721c24;
-            border: 2px solid #dc3545;
-        }
-
-        .game-mode-select {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin: 20px 0;
-        }
-
-        .mode-card {
-            padding: 20px;
-            border: 2px solid #e0e0e0;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-align: center;
-        }
-
-        .mode-card:hover {
-            border-color: #667eea;
-            transform: scale(1.05);
-        }
-
-        .mode-card.selected {
-            border-color: #667eea;
-            background: #e7e7ff;
-        }
-
-        .mode-card h3 {
-            color: #667eea;
-            margin-bottom: 10px;
-        }
-
-        .mode-card p {
-            color: #666;
-            font-size: 0.9em;
-        }
-
-        @media (max-width: 600px) {
-            .container {
-                padding: 20px;
-            }
-
-            h1 {
-                font-size: 1.5em;
-            }
-
-            .game-mode-select {
-                grid-template-columns: 1fr;
-            }
+        /* Barre de progression du temps */
+        #timer-bar {
+            transition: width 0.1s linear;
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <h1>🎭 Citation Mystère</h1>
+<body class="h-screen flex flex-col items-center justify-center relative">
 
-        <!-- Écran d'accueil -->
-        <div id="welcome-screen" class="screen active">
-            <div class="input-group">
-                <label>Nombre de joueurs :</label>
-                <input type="number" id="num-players" min="1" max="8" value="2">
-            </div>
-            <div id="players-input"></div>
-            <button onclick="startSetup()">Suivant</button>
-        </div>
-
-        <!-- Écran de sélection du mode -->
-        <div id="mode-screen" class="screen">
-            <h2 style="text-align: center; color: #333; margin-bottom: 20px;">Choisissez un mode de jeu</h2>
-            <div class="game-mode-select">
-                <div class="mode-card selected" onclick="selectMode('classic')">
-                    <h3>🎯 Classique</h3>
-                    <p>Devinez l'auteur et l'œuvre avec des indices progressifs</p>
-                </div>
-                <div class="mode-card" onclick="selectMode('fake')">
-                    <h3>🎭 Vraie ou Fausse</h3>
-                    <p>Identifiez les fausses citations parmi les vraies</p>
-                </div>
-            </div>
-            <button onclick="startGame()">Commencer le jeu</button>
-        </div>
-
-        <!-- Écran de jeu -->
-        <div id="game-screen" class="screen">
-            <div class="scoreboard" id="scoreboard"></div>
-            
-            <div class="timer" id="timer">30</div>
-            
-            <div class="citation-box" id="citation"></div>
-            
-            <div class="indices" id="indices-box" style="display: none;">
-                <h3>💡 Indices</h3>
-                <p id="indices"></p>
-            </div>
-
-            <div id="fake-mode-question" style="display: none; text-align: center; margin: 20px 0;">
-                <h3 style="color: #333; margin-bottom: 15px;">Cette citation est-elle réelle ?</h3>
-                <div style="display: flex; gap: 10px; justify-content: center;">
-                    <button onclick="answerFakeMode(true)" style="width: auto; background: #28a745;">✓ Réelle</button>
-                    <button onclick="answerFakeMode(false)" style="width: auto; background: #dc3545;">✗ Fausse</button>
-                </div>
-            </div>
-
-            <div class="answer-input-group" id="answer-section">
-                <input type="text" id="answer-input" placeholder="Votre réponse (auteur ou œuvre)...">
-                <button onclick="submitAnswer()">Valider</button>
-            </div>
-
-            <div id="feedback"></div>
-
-            <button onclick="nextRound()" id="next-btn" style="display: none;">Manche suivante</button>
-        </div>
-
-        <!-- Écran de fin -->
-        <div id="end-screen" class="screen">
-            <h2 style="text-align: center; color: #333; margin-bottom: 20px;">🏆 Résultats finaux</h2>
-            <div class="scoreboard" id="final-scoreboard"></div>
-            <button onclick="restartGame()">Nouvelle partie</button>
-        </div>
+    <!-- Arrière-plan décoratif -->
+    <div class="absolute inset-0 z-0 opacity-20 pointer-events-none">
+        <div class="absolute top-10 left-10 w-32 h-32 bg-purple-600 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-10 right-10 w-64 h-64 bg-blue-600 rounded-full blur-3xl"></div>
     </div>
 
+    <!-- Interface Principale -->
+    <div class="z-10 w-full max-w-2xl p-6">
+        
+        <!-- En-tête : Score et Niveau -->
+        <div class="flex justify-between items-center mb-8 border-b border-gray-700 pb-4">
+            <div class="text-center">
+                <p class="text-gray-400 text-sm">SCORE</p>
+                <p id="score-display" class="cyber-font text-2xl text-blue-400">0</p>
+            </div>
+            <h1 class="cyber-font text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
+                PATTERN SHIFTER
+            </h1>
+            <div class="text-center">
+                <p class="text-gray-400 text-sm">NIVEAU</p>
+                <p id="level-display" class="cyber-font text-2xl text-purple-400">1</p>
+            </div>
+        </div>
+
+        <!-- Zone de Jeu -->
+        <div id="game-area" class="hidden">
+            
+            <!-- Barre de temps -->
+            <div class="w-full h-2 bg-gray-800 rounded-full mb-6 overflow-hidden">
+                <div id="timer-bar" class="h-full bg-gradient-to-r from-green-400 to-blue-500 w-full"></div>
+            </div>
+
+            <!-- Affichage de la séquence -->
+            <div class="bg-gray-800/50 backdrop-blur-md rounded-xl p-8 mb-8 border border-gray-700 min-h-[160px] flex items-center justify-center space-x-4">
+                <div id="sequence-container" class="flex flex-wrap justify-center gap-4">
+                    <!-- Les éléments de la séquence seront injectés ici par JS -->
+                </div>
+                <!-- Case mystère -->
+                <div id="mystery-box" class="w-16 h-16 rounded-lg border-2 border-dashed border-gray-500 flex items-center justify-center text-2xl text-gray-500 opacity-0 transition-opacity duration-300">
+                    <i class="fa-solid fa-question"></i>
+                </div>
+            </div>
+
+            <!-- Zone de réponse (Choix) -->
+            <div class="text-center mb-4">
+                <p id="instruction-text" class="text-gray-300 mb-4 animate-pulse">Analysez la séquence...</p>
+            </div>
+
+            <div id="options-container" class="grid grid-cols-3 gap-6 opacity-50 pointer-events-none transition-all duration-300">
+                <!-- Les boutons de choix seront injectés ici -->
+                <button class="option-btn h-24 bg-gray-700 rounded-lg hover:bg-gray-600 neon-box flex items-center justify-center text-3xl"></button>
+                <button class="option-btn h-24 bg-gray-700 rounded-lg hover:bg-gray-600 neon-box flex items-center justify-center text-3xl"></button>
+                <button class="option-btn h-24 bg-gray-700 rounded-lg hover:bg-gray-600 neon-box flex items-center justify-center text-3xl"></button>
+            </div>
+        </div>
+
+        <!-- Écran de Démarrage -->
+        <div id="start-screen" class="text-center bg-gray-800/80 p-10 rounded-2xl border border-blue-500 shadow-2xl backdrop-blur-sm">
+            <div class="mb-6 text-6xl text-blue-400">
+                <i class="fa-solid fa-shapes"></i>
+            </div>
+            <h2 class="text-2xl font-bold mb-4">Prêt à décoder ?</h2>
+            <p class="text-gray-300 mb-8">
+                Une suite logique de formes va apparaître.<br>
+                Trouvez la règle (Miroir, Suite, Alternance...)<br>
+                et devinez le prochain élément avant la fin du temps !
+            </p>
+            <button onclick="startGame()" class="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-full transition-transform hover:scale-105 shadow-lg shadow-blue-500/50">
+                COMMENCER LE JEU
+            </button>
+        </div>
+
+        <!-- Écran de Fin de Jeu -->
+        <div id="game-over-screen" class="hidden text-center bg-gray-800/90 p-10 rounded-2xl border border-red-500 shadow-2xl absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md">
+            <div class="mb-4 text-6xl text-red-500">
+                <i class="fa-solid fa-skull-crossbones"></i>
+            </div>
+            <h2 class="text-3xl font-bold mb-2 cyber-font text-white">ÉCHEC SYSTÈME</h2>
+            <p class="text-gray-300 mb-6">La séquence a été rompue.</p>
+            <p class="text-xl mb-8">Score Final : <span id="final-score" class="text-blue-400 font-bold">0</span></p>
+            <button onclick="resetGame()" class="px-8 py-3 bg-red-600 hover:bg-red-500 text-white font-bold rounded-full transition-transform hover:scale-105">
+                RÉESSAYER
+            </button>
+        </div>
+
+    </div>
+
+    <!-- Logique du Jeu -->
     <script>
-        const citations = [
-            { text: "Être ou ne pas être, telle est la question.", author: "William Shakespeare", work: "Hamlet", hints: "Pièce de théâtre, XVIIe siècle, Prince du Danemark", fake: false },
-            { text: "Je pense, donc je suis.", author: "René Descartes", work: "Discours de la méthode", hints: "Philosophie, XVIIe siècle, Doute méthodique", fake: false },
-            { text: "L'enfer, c'est les autres.", author: "Jean-Paul Sartre", work: "Huis clos", hints: "Théâtre, XXe siècle, Existentialisme", fake: false },
-            { text: "La vie est comme une boîte de chocolats.", author: "Forrest Gump", work: "Forrest Gump", hints: "Film, années 1990, Tom Hanks", fake: false },
-            { text: "Le café est la preuve que Dieu nous aime.", author: "Inconnu", work: "Aucune", hints: "Fausse attribution, boisson, sagesse populaire", fake: true },
-            { text: "Carpe diem.", author: "Horace", work: "Odes", hints: "Latin, Antiquité, Profiter du jour", fake: false },
-            { text: "La connaissance est le seul bien; l'ignorance le seul mal.", author: "Socrate", work: "Enseignements", hints: "Philosophie grecque, Antiquité, Sagesse", fake: false },
-            { text: "Les chats sont les maîtres du monde en secret.", author: "Anonyme", work: "Internet", hints: "Fausse citation, humour moderne, animaux", fake: true },
-            { text: "Tout ce qui brille n'est pas or.", author: "William Shakespeare", work: "Le Marchand de Venise", hints: "Théâtre, XVIe siècle, Proverbe", fake: false },
-            { text: "La seule chose que nous ayons à craindre, c'est la crainte elle-même.", author: "Franklin D. Roosevelt", work: "Discours inaugural", hints: "Politique, XXe siècle, Président américain", fake: false },
-            { text: "Le chocolat résout tous les problèmes.", author: "Proverbe moderne", work: "Aucune", hints: "Fausse sagesse, nourriture, humour", fake: true },
-            { text: "Connais-toi toi-même.", author: "Socrate", work: "Temple de Delphes", hints: "Philosophie grecque, Antiquité, Inscription", fake: false }
+        // --- Configuration & Données ---
+        
+        // Banque d'icônes (FontAwesome classes) et couleurs associées
+        const itemsPool = [
+            { icon: 'fa-square', color: 'text-blue-400' },
+            { icon: 'fa-circle', color: 'text-red-400' },
+            { icon: 'fa-play', color: 'text-green-400' }, // Triangle pointant à droite
+            { icon: 'fa-star', color: 'text-yellow-400' },
+            { icon: 'fa-heart', color: 'text-pink-400' },
+            { icon: 'fa-bolt', color: 'text-yellow-200' },
+            { icon: 'fa-diamond', color: 'text-cyan-300' },
+            { icon: 'fa-moon', color: 'text-purple-300' }
         ];
 
         let gameState = {
-            players: [],
-            currentRound: 0,
-            maxRounds: 5,
-            currentCitation: null,
-            timeLeft: 30,
-            timerInterval: null,
-            hintsShown: false,
-            gameMode: 'classic',
-            answered: false
+            score: 0,
+            level: 1,
+            timer: null,
+            timeLeft: 100, // Pourcentage
+            isPlaying: false,
+            currentSequence: [],
+            correctAnswer: null
         };
 
-        document.getElementById('num-players').addEventListener('input', function() {
-            const num = parseInt(this.value) || 1;
-            const container = document.getElementById('players-input');
-            container.innerHTML = '';
+        const config = {
+            sequenceSpeed: 800, // ms entre chaque item
+            timeDrain: 0.5, // vitesse de la barre de temps
+        };
+
+        // --- Éléments DOM ---
+        const startScreen = document.getElementById('start-screen');
+        const gameArea = document.getElementById('game-area');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const sequenceContainer = document.getElementById('sequence-container');
+        const optionsContainer = document.getElementById('options-container');
+        const mysteryBox = document.getElementById('mystery-box');
+        const timerBar = document.getElementById('timer-bar');
+        const scoreDisplay = document.getElementById('score-display');
+        const levelDisplay = document.getElementById('level-display');
+        const instructionText = document.getElementById('instruction-text');
+
+        // --- Moteur de Patterns (Cœur du jeu) ---
+
+        // Génère une séquence et la bonne réponse
+        function generateRoundData() {
+            // Nombre d'items disponibles selon le niveau (max tout le pool)
+            const poolSize = Math.min(3 + gameState.level, itemsPool.length);
+            const activePool = itemsPool.slice(0, poolSize);
             
-            for (let i = 0; i < num; i++) {
-                const div = document.createElement('div');
-                div.className = 'input-group';
-                div.innerHTML = `
-                    <label>Joueur ${i + 1} :</label>
-                    <input type="text" id="player-${i}" placeholder="Pseudo" value="Joueur ${i + 1}">
-                `;
-                container.appendChild(div);
+            // Choisir un type de logique aléatoire
+            const logicType = Math.floor(Math.random() * 3); 
+            // 0: Répétition simple (A B C A B -> C)
+            // 1: Miroir (A B C B -> A)
+            // 2: Progression (A B C D -> E) (Simulé par index dans le pool)
+
+            let sequence = [];
+            let answer = null;
+
+            // Logique 1 : Progression Linéaire (A, B, C -> D)
+            if (logicType === 0) {
+                const startIdx = Math.floor(Math.random() * (activePool.length - 4));
+                sequence = [activePool[startIdx], activePool[startIdx+1], activePool[startIdx+2]];
+                answer = activePool[startIdx+3];
             }
-        });
-
-        document.getElementById('num-players').dispatchEvent(new Event('input'));
-
-        function startSetup() {
-            const num = parseInt(document.getElementById('num-players').value) || 1;
-            gameState.players = [];
-            
-            for (let i = 0; i < num; i++) {
-                const name = document.getElementById(`player-${i}`).value || `Joueur ${i + 1}`;
-                gameState.players.push({ name, score: 0 });
+            // Logique 2 : Alternance (A, B, A, B -> A)
+            else if (logicType === 1) {
+                const itemA = activePool[Math.floor(Math.random() * activePool.length)];
+                let itemB = activePool[Math.floor(Math.random() * activePool.length)];
+                while(itemB === itemA) itemB = activePool[Math.floor(Math.random() * activePool.length)];
+                
+                sequence = [itemA, itemB, itemA, itemB];
+                answer = itemA;
+            }
+            // Logique 3 : Miroir / Palindrome (A, B, C, B -> A)
+            else {
+                const itemA = activePool[Math.floor(Math.random() * activePool.length)];
+                const itemB = activePool[Math.floor(Math.random() * activePool.length)];
+                const itemC = activePool[Math.floor(Math.random() * activePool.length)];
+                
+                // Pour éviter des doublons qui rendent le miroir confus
+                if(itemA !== itemB && itemB !== itemC) {
+                    sequence = [itemA, itemB, itemC, itemB];
+                    answer = itemA;
+                } else {
+                    // Fallback sur simple suite si hasard malheureux
+                    sequence = [activePool[0], activePool[1], activePool[2]];
+                    answer = activePool[3] || activePool[0];
+                }
             }
 
-            showScreen('mode-screen');
+            return { sequence, answer, activePool };
         }
 
-        function selectMode(mode) {
-            gameState.gameMode = mode;
-            document.querySelectorAll('.mode-card').forEach(card => {
-                card.classList.remove('selected');
-            });
-            event.target.closest('.mode-card').classList.add('selected');
-        }
+        // --- Fonctions de Jeu ---
 
         function startGame() {
-            gameState.currentRound = 0;
-            gameState.players.forEach(p => p.score = 0);
-            showScreen('game-screen');
+            startScreen.classList.add('hidden');
+            gameOverScreen.classList.add('hidden');
+            gameArea.classList.remove('hidden');
+            
+            gameState.score = 0;
+            gameState.level = 1;
+            updateUI();
+            
             startRound();
         }
 
         function startRound() {
-            gameState.currentRound++;
-            gameState.answered = false;
+            // Reset visuels
+            sequenceContainer.innerHTML = '';
+            mysteryBox.style.opacity = '0';
+            optionsContainer.innerHTML = '';
+            optionsContainer.classList.add('opacity-50', 'pointer-events-none');
+            optionsContainer.classList.remove('opacity-100', 'pointer-events-auto');
+            instructionText.innerText = "Mémorisez la séquence...";
+            instructionText.className = "text-gray-300 mb-4 animate-pulse";
             
-            if (gameState.currentRound > gameState.maxRounds) {
-                endGame();
-                return;
-            }
+            // Reset Timer
+            gameState.timeLeft = 100;
+            timerBar.style.width = '100%';
+            timerBar.className = "h-full bg-gradient-to-r from-green-400 to-blue-500 w-full"; // Couleur verte
+            if (gameState.timer) clearInterval(gameState.timer);
 
-            gameState.currentCitation = citations[Math.floor(Math.random() * citations.length)];
-            gameState.hintsShown = false;
-            gameState.timeLeft = 30;
+            // Générer les données
+            const data = generateRoundData();
+            gameState.currentSequence = data.sequence;
+            gameState.correctAnswer = data.answer;
+            
+            // Lancer l'animation de la séquence
+            let idx = 0;
+            const interval = setInterval(() => {
+                if (idx < gameState.currentSequence.length) {
+                    addItemToDisplay(gameState.currentSequence[idx]);
+                    idx++;
+                } else {
+                    clearInterval(interval);
+                    // Fin de la séquence, activer le jeu
+                    activatePlayerTurn(data.activePool);
+                }
+            }, Math.max(300, config.sequenceSpeed - (gameState.level * 20))); // Plus rapide à chaque niveau
+        }
 
-            document.getElementById('citation').textContent = `"${gameState.currentCitation.text}"`;
-            document.getElementById('indices-box').style.display = 'none';
-            document.getElementById('feedback').innerHTML = '';
-            document.getElementById('answer-input').value = '';
-            document.getElementById('next-btn').style.display = 'none';
+        function addItemToDisplay(item) {
+            const div = document.createElement('div');
+            div.className = `w-16 h-16 bg-gray-700 rounded-lg flex items-center justify-center text-3xl shadow-lg border border-gray-600 pop-in ${item.color}`;
+            div.innerHTML = `<i class="fa-solid ${item.icon}"></i>`;
+            sequenceContainer.appendChild(div);
+        }
 
-            if (gameState.gameMode === 'fake') {
-                document.getElementById('answer-section').style.display = 'none';
-                document.getElementById('fake-mode-question').style.display = 'block';
-            } else {
-                document.getElementById('answer-section').style.display = 'flex';
-                document.getElementById('fake-mode-question').style.display = 'none';
-            }
+        function activatePlayerTurn(pool) {
+            // Afficher le point d'interrogation
+            mysteryBox.style.opacity = '1';
+            instructionText.innerText = "Quel est le prochain élément ?";
+            instructionText.className = "text-blue-400 font-bold mb-4";
 
-            updateScoreboard();
+            // Générer les boutons de choix
+            generateOptions(pool);
+
+            // Activer les clics
+            optionsContainer.classList.remove('opacity-50', 'pointer-events-none');
+            optionsContainer.classList.add('opacity-100', 'pointer-events-auto');
+
+            // Lancer le timer
             startTimer();
         }
 
-        function startTimer() {
-            clearInterval(gameState.timerInterval);
+        function generateOptions(pool) {
+            // 1 Bonne réponse + 2 mauvaises
+            let options = [gameState.correctAnswer];
             
-            gameState.timerInterval = setInterval(() => {
-                gameState.timeLeft--;
-                document.getElementById('timer').textContent = gameState.timeLeft;
+            // Trouver des mauvaises réponses uniques
+            while (options.length < 3) {
+                const randomItem = pool[Math.floor(Math.random() * pool.length)];
+                // Vérifier qu'on n'ajoute pas de doublon (ni la bonne réponse, ni une mauvaise déjà choisie)
+                if (!options.includes(randomItem)) {
+                    options.push(randomItem);
+                }
+            }
 
-                if (gameState.timeLeft === 15 && !gameState.hintsShown && gameState.gameMode === 'classic') {
-                    showHints();
+            // Mélanger les options
+            options.sort(() => Math.random() - 0.5);
+
+            // Créer les boutons HTML
+            options.forEach(item => {
+                const btn = document.createElement('button');
+                btn.className = `option-btn h-24 bg-gray-700 rounded-lg hover:bg-gray-600 neon-box flex items-center justify-center text-4xl ${item.color} transition-transform active:scale-95`;
+                btn.innerHTML = `<i class="fa-solid ${item.icon}"></i>`;
+                
+                // Gestion du clic
+                btn.onclick = () => checkAnswer(item, btn);
+                
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function startTimer() {
+            // Vitesse du timer augmente avec le niveau
+            const speed = config.timeDrain + (gameState.level * 0.05);
+            
+            gameState.timer = setInterval(() => {
+                gameState.timeLeft -= speed;
+                timerBar.style.width = `${gameState.timeLeft}%`;
+
+                // Changement de couleur selon l'urgence
+                if(gameState.timeLeft < 30) {
+                    timerBar.classList.remove('from-green-400', 'to-blue-500');
+                    timerBar.classList.add('bg-red-500');
                 }
 
                 if (gameState.timeLeft <= 0) {
-                    clearInterval(gameState.timerInterval);
-                    if (!gameState.answered) {
-                        showFeedback('incorrect', `Temps écoulé ! La réponse était : ${gameState.currentCitation.author} - ${gameState.currentCitation.work}`);
-                        document.getElementById('next-btn').style.display = 'block';
-                    }
+                    gameOver();
                 }
-            }, 1000);
+            }, 50);
         }
 
-        function showHints() {
-            gameState.hintsShown = true;
-            document.getElementById('indices').textContent = gameState.currentCitation.hints;
-            document.getElementById('indices-box').style.display = 'block';
-        }
+        function checkAnswer(selectedItem, btnElement) {
+            clearInterval(gameState.timer);
+            
+            // Désactiver les clics pour éviter le spam
+            optionsContainer.classList.add('pointer-events-none');
 
-        function submitAnswer() {
-            if (gameState.answered) return;
-
-            const answer = document.getElementById('answer-input').value.trim().toLowerCase();
-            const author = gameState.currentCitation.author.toLowerCase();
-            const work = gameState.currentCitation.work.toLowerCase();
-
-            if (answer.includes(author) || answer.includes(work) || 
-                author.includes(answer) || work.includes(answer)) {
-                gameState.answered = true;
-                clearInterval(gameState.timerInterval);
+            if (selectedItem.icon === gameState.correctAnswer.icon) {
+                // VICTOIRE
+                btnElement.classList.remove('bg-gray-700');
+                btnElement.classList.add('bg-green-600', 'border-2', 'border-green-400');
                 
-                const points = gameState.hintsShown ? 1 : 2;
-                gameState.players[0].score += points;
-                
-                showFeedback('correct', `Bravo ! +${points} point(s). C'était bien ${gameState.currentCitation.author} - ${gameState.currentCitation.work}`);
-                updateScoreboard();
-                document.getElementById('next-btn').style.display = 'block';
-            } else {
-                showFeedback('incorrect', 'Mauvaise réponse, essayez encore !');
+                // Remplir la case mystère
+                mysteryBox.innerHTML = `<i class="fa-solid ${selectedItem.icon}"></i>`;
+                mysteryBox.className = `w-16 h-16 rounded-lg flex items-center justify-center text-3xl pop-in ${selectedItem.color} border-2 border-green-500 bg-gray-800`;
+
+                gameState.score += 100 + (gameState.level * 10) + Math.floor(gameState.timeLeft);
+                gameState.level++;
+                updateUI();
+
+                // Délai avant prochain round
                 setTimeout(() => {
-                    document.getElementById('feedback').innerHTML = '';
-                }, 2000);
-            }
-        }
-
-        function answerFakeMode(isReal) {
-            if (gameState.answered) return;
-            
-            gameState.answered = true;
-            clearInterval(gameState.timerInterval);
-
-            const correct = isReal === !gameState.currentCitation.fake;
-            
-            if (correct) {
-                gameState.players[0].score += 1;
-                showFeedback('correct', `Correct ! Cette citation ${gameState.currentCitation.fake ? 'est bien fausse' : 'est bien réelle'}.`);
+                    startRound();
+                }, 1000);
             } else {
-                showFeedback('incorrect', `Incorrect ! Cette citation ${gameState.currentCitation.fake ? 'était fausse' : 'était réelle'}. (${gameState.currentCitation.author})`);
+                // DÉFAITE
+                btnElement.classList.remove('bg-gray-700');
+                btnElement.classList.add('bg-red-600', 'shake'); // Ajouter animation CSS shake si voulu
+                
+                // Montrer la bonne réponse dans la box
+                mysteryBox.innerHTML = `<i class="fa-solid ${gameState.correctAnswer.icon}"></i>`;
+                mysteryBox.className = `w-16 h-16 rounded-lg flex items-center justify-center text-3xl pop-in text-gray-400 border-2 border-green-500 bg-gray-800 opacity-50`;
+                
+                setTimeout(gameOver, 800);
             }
-            
-            updateScoreboard();
-            document.getElementById('next-btn').style.display = 'block';
         }
 
-        function showFeedback(type, message) {
-            const feedback = document.getElementById('feedback');
-            feedback.className = `feedback ${type}`;
-            feedback.textContent = message;
+        function gameOver() {
+            clearInterval(gameState.timer);
+            gameArea.classList.add('hidden');
+            gameOverScreen.classList.remove('hidden');
+            document.getElementById('final-score').innerText = gameState.score;
         }
 
-        function updateScoreboard() {
-            const scoreboard = document.getElementById('scoreboard');
-            scoreboard.innerHTML = '<h3 style="margin-bottom: 15px; color: #333;">Scores</h3>';
-            
-            gameState.players.forEach(player => {
-                const item = document.createElement('div');
-                item.className = 'score-item';
-                item.innerHTML = `<span>${player.name}</span><span>${player.score} pts</span>`;
-                scoreboard.appendChild(item);
-            });
+        function resetGame() {
+            startGame();
         }
 
-        function nextRound() {
-            startRound();
+        function updateUI() {
+            scoreDisplay.innerText = gameState.score;
+            levelDisplay.innerText = gameState.level;
         }
 
-        function endGame() {
-            showScreen('end-screen');
-            
-            const sorted = [...gameState.players].sort((a, b) => b.score - a.score);
-            const finalScoreboard = document.getElementById('final-scoreboard');
-            finalScoreboard.innerHTML = '';
-
-            sorted.forEach((player, index) => {
-                const item = document.createElement('div');
-                item.className = 'score-item';
-                if (index === 0) item.classList.add('winner');
-                item.innerHTML = `
-                    <span>${index === 0 ? '🏆 ' : ''}${player.name}</span>
-                    <span>${player.score} pts</span>
-                `;
-                finalScoreboard.appendChild(item);
-            });
-        }
-
-        function restartGame() {
-            showScreen('welcome-screen');
-        }
-
-        function showScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(screenId).classList.add('active');
-        }
-
-        document.getElementById('answer-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') submitAnswer();
-        });
     </script>
 </body>
 </html>

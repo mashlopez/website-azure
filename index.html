@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Concepts Info - Effet Glow</title>
+    <title>Concepts Info - Effet Glow v2</title>
     <style>
         :root {
             --bg-color: #0c0c0c;
@@ -25,6 +25,7 @@
             align-items: center;
             justify-content: center;
             overflow-x: hidden;
+            padding: 40px 0; /* Ajout de padding pour le scroll */
         }
 
         h1 {
@@ -32,34 +33,35 @@
             letter-spacing: 2px;
             margin-bottom: 50px;
             text-transform: uppercase;
+            text-align: center;
             background: linear-gradient(90deg, #fff, #666);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        /* Grille principale */
+        /* Grille principale ajustée pour max 2 par ligne */
         #cards {
             display: flex;
             flex-wrap: wrap;
-            gap: 16px; /* Espace entre les cartes */
-            max-width: 1000px;
+            gap: 20px;
+            /* Largeur max pour 2 cartes de 300px + gap de 20px = 620px minimum.
+               Si on met 700px, une 3ème ne rentre pas (900px+).
+            */
+            max-width: 700px; 
             width: calc(100% - 40px);
             justify-content: center;
         }
 
-        /* La Carte */
+        /* La Carte - Hauteur augmentée pour le texte */
         .card {
             background-color: var(--card-bg);
             border-radius: 12px;
             cursor: pointer;
-            height: 300px;
+            height: 360px; /* Hauteur augmentée pour plus de texte */
             width: 300px;
             position: relative;
-            overflow: hidden; /* Important pour masquer le contenu bonus */
-            
-            /* Bordure subtile par défaut */
+            overflow: hidden;
             border: 1px solid var(--border-color);
-            
             display: flex;
             flex-direction: column;
             align-items: flex-start;
@@ -68,7 +70,7 @@
             transition: transform 0.3s ease;
         }
 
-        /* Effet de lueur (Glow) qui suit la souris via JS */
+        /* Effet de lueur (Glow) */
         .card::before {
             content: "";
             height: 100%;
@@ -77,26 +79,21 @@
             top: 0;
             left: 0;
             border-radius: inherit;
-            
-            /* Le gradient radial est positionné par les variables --mouse-x et --mouse-y */
             background: radial-gradient(
                 800px circle at var(--mouse-x) var(--mouse-y), 
                 var(--spotlight-color), 
                 transparent 40%
             );
-            
-            opacity: 0; /* Invisible par défaut */
+            opacity: 0;
             transition: opacity 0.5s;
             z-index: 1;
             pointer-events: none;
         }
 
-        /* Quand on survole le GROUPE de cartes, on active la lumière */
         #cards:hover .card::before {
             opacity: 1;
         }
 
-        /* Contenu de la carte (Z-index pour être au dessus de la lumière) */
         .card-content {
             z-index: 2;
             position: relative;
@@ -106,7 +103,6 @@
             justify-content: center;
         }
 
-        /* Icône */
         .card-icon {
             font-size: 3rem;
             margin-bottom: 20px;
@@ -115,7 +111,7 @@
 
         .card h2 {
             margin: 0;
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: 600;
             transition: transform 0.3s ease;
         }
@@ -123,25 +119,28 @@
         /* Le texte caché (Bonus) */
         .card-info {
             color: var(--text-secondary);
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             line-height: 1.5;
             margin-top: 15px;
-            
-            /* Masqué par défaut */
             opacity: 0;
             transform: translateY(20px);
             transition: all 0.4s ease;
         }
+        
+        /* Soulignement subtil pour les termes techniques */
+        .tech-term {
+            color: #fff;
+            border-bottom: 1px dotted #666;
+        }
 
-        /* --- INTERACTION AU SURVOL SPÉCIFIQUE D'UNE CARTE --- */
+        /* --- INTERACTION --- */
         
         .card:hover {
-            transform: scale(1.02); /* Léger zoom */
+            transform: scale(1.02);
             border-color: rgba(255,255,255,0.3);
             box-shadow: 0 0 30px rgba(0,0,0,0.5);
         }
 
-        /* Animation des éléments internes au survol */
         .card:hover .card-icon {
             transform: scale(1.1) translateY(-10px);
         }
@@ -152,80 +151,138 @@
             text-shadow: 0 0 10px rgba(255,255,255,0.5);
         }
 
-        /* Apparition du texte explicatif */
         .card:hover .card-info {
             opacity: 1;
             transform: translateY(0);
         }
 
-        /* Couleurs spécifiques pour les "Bonus" visuels */
+        /* Couleurs spécifiques (Neon Glows) */
         .rainbow:hover .card-icon { text-shadow: 0 0 20px rgba(255, 0, 255, 0.6); }
         .docker:hover .card-icon { text-shadow: 0 0 20px rgba(0, 150, 255, 0.6); }
         .packet:hover .card-icon { text-shadow: 0 0 20px rgba(0, 255, 100, 0.6); }
+        .crypto:hover .card-icon { text-shadow: 0 0 20px rgba(255, 215, 0, 0.6); }
+        
+        /* Nouveaux styles */
+        .blockchain:hover .card-icon { text-shadow: 0 0 20px rgba(255, 140, 0, 0.6); } /* Orange */
+        .api:hover .card-icon { text-shadow: 0 0 20px rgba(255, 80, 80, 0.6); } /* Rouge clair */
+        .vpn:hover .card-icon { text-shadow: 0 0 20px rgba(0, 255, 255, 0.6); } /* Cyan */
+        .ddos:hover .card-icon { text-shadow: 0 0 20px rgba(255, 0, 0, 0.8); } /* Rouge intense */
 
-        /* Petit footer */
         .footer {
             margin-top: 50px;
             font-size: 0.8rem;
             color: #555;
+            text-align: center;
         }
 
     </style>
 </head>
 <body>
 
-    <h1>Archive de Données</h1>
+    <h1>Archive de Données - V2.0</h1>
 
     <div id="cards">
         
-        <!-- CARTE 1 : RAINBOW TABLE -->
+        <!-- 1. RAINBOW TABLE -->
         <div class="card rainbow">
             <div class="card-content">
                 <div class="card-icon">🌈</div>
                 <h2>Rainbow Table</h2>
                 <div class="card-info">
-                    <strong>Le piratage par pré-calcul.</strong><br><br>
-                    Au lieu de tester tous les mots de passe (Brute Force), le pirate utilise une table gigantesque contenant des millions de mots de passe déjà convertis en "Hash".<br>
-                    <em style="color:#ff77ff; display:block; margin-top:10px;">Contre-mesure : Le "Salage" (Salt).</em>
+                    <strong>Cassage de mot de passe par "Time-Memory Tradeoff".</strong><br><br>
+                    Au lieu de recalculer le hash de chaque combinaison possible (très lent), le pirate utilise des tables gigantesques de <span class="tech-term">hashes pré-calculés</span>. C'est comme avoir un annuaire inversé des mots de passe.<br>
+                    <em style="color:#ff77ff; display:block; margin-top:10px;">🛡️ Solution : Le "Salt" (ajouter des données aléatoires avant de hasher).</em>
                 </div>
             </div>
         </div>
 
-        <!-- CARTE 2 : CONTENEURS -->
+        <!-- 2. CONTENEURS -->
         <div class="card docker">
             <div class="card-content">
                 <div class="card-icon">🐳</div>
                 <h2>Conteneur</h2>
                 <div class="card-info">
-                    <strong>"Ça marche chez moi !"</strong><br><br>
-                    Un conteneur (ex: Docker) est une boîte légère qui contient le code ET toutes ses dépendances. Contrairement à une machine virtuelle, il partage le noyau du système.<br>
-                    <em style="color:#4db5ff; display:block; margin-top:10px;">Avantage : Démarrage en millisecondes.</em>
+                    <strong>Isolation légère vs Virtualisation.</strong><br><br>
+                    Une Machine Virtuelle (VM) simule un ordinateur entier (lourd). Un conteneur (Docker) partage le <span class="tech-term">noyau (Kernel)</span> de l'hôte mais isole les processus et librairies. C'est ce qui garantit que le code tourne à l'identique en dev et en prod.<br>
+                    <em style="color:#4db5ff; display:block; margin-top:10px;">⚡ Avantage : Portabilité extrême et légèreté.</em>
                 </div>
             </div>
         </div>
 
-        <!-- CARTE 3 : PAQUETS -->
+        <!-- 3. PAQUETS RÉSEAU -->
         <div class="card packet">
             <div class="card-content">
                 <div class="card-icon">📦</div>
-                <h2>Paquet Réseau</h2>
+                <h2>Paquet TCP/IP</h2>
                 <div class="card-info">
-                    <strong>Internet en morceaux.</strong><br><br>
-                    Une image ne voyage pas entière. Elle est découpée en milliers de petits paquets (IP). Chaque paquet peut prendre une route différente pour arriver à destination.<br>
-                    <em style="color:#5cff8a; display:block; margin-top:10px;">Protocole : TCP remet tout dans l'ordre.</em>
+                    <strong>L'unité atomique d'Internet.</strong><br><br>
+                    Une donnée est découpée en fragments. Chaque paquet contient un <span class="tech-term">Header</span> (Métadonnées : IP source, dest, ordre) et un <span class="tech-term">Payload</span> (La donnée réelle). Les paquets peuvent emprunter des routes différentes à travers le monde.<br>
+                    <em style="color:#5cff8a; display:block; margin-top:10px;">📡 Le protocole TCP vérifie qu'ils arrivent tous.</em>
                 </div>
             </div>
         </div>
 
-        <!-- CARTE 4 : CRYPTOGRAPHIE -->
+        <!-- 4. CRYPTOGRAPHIE RSA -->
         <div class="card crypto">
             <div class="card-content">
                 <div class="card-icon">🔐</div>
-                <h2>Chiffrement RSA</h2>
+                <h2>Chiffrement Asymétrique</h2>
                 <div class="card-info">
-                    <strong>Clé Publique / Clé Privée.</strong><br><br>
-                    Imaginez une boîte aux lettres. Tout le monde peut y mettre une lettre (Clé Publique), mais seul le propriétaire possède la clé pour l'ouvrir (Clé Privée).<br>
-                    <em style="color:#ffd700; display:block; margin-top:10px;">Base de la sécurité HTTPS.</em>
+                    <strong>Le secret des deux clés.</strong><br><br>
+                    Contrairement au cadenas classique, RSA utilise deux clés liées mathématiquement. Ce que la <span class="tech-term">Clé Publique</span> verrouille, seule la <span class="tech-term">Clé Privée</span> peut le déverrouiller (et vice-versa). C'est la base de la signature numérique et du HTTPS.<br>
+                    <em style="color:#ffd700; display:block; margin-top:10px;">🔢 Basé sur la difficulté de factoriser des nombres premiers géants.</em>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. BLOCKCHAIN (NOUVEAU) -->
+        <div class="card blockchain">
+            <div class="card-content">
+                <div class="card-icon">🔗</div>
+                <h2>Blockchain</h2>
+                <div class="card-info">
+                    <strong>Registre distribué et immuable.</strong><br><br>
+                    Une base de données partagée par tout le réseau, sans chef. Chaque page (bloc) contient l'empreinte digitale (Hash) de la page précédente. Modifier une vieille transaction briserait toute la chaîne (effet domino), rendant la fraude impossible.<br>
+                    <em style="color:#ff9f43; display:block; margin-top:10px;">🏛️ Technologie derrière Bitcoin et les Smart Contracts.</em>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. API REST (NOUVEAU) -->
+        <div class="card api">
+            <div class="card-content">
+                <div class="card-icon">🔌</div>
+                <h2>API REST</h2>
+                <div class="card-info">
+                    <strong>Le langage des applications.</strong><br><br>
+                    Comment votre appli météo parle-t-elle au serveur ? Via une API. C'est un ensemble de règles (GET, POST, PUT) utilisant souvent le format <span class="tech-term">JSON</span> pour échanger des données de manière standardisée et sans état (Stateless).<br>
+                    <em style="color:#ff6b6b; display:block; margin-top:10px;">🌐 L'épine dorsale du web moderne et des micro-services.</em>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7. VPN (NOUVEAU) -->
+        <div class="card vpn">
+            <div class="card-content">
+                <div class="card-icon">🛡️</div>
+                <h2>VPN</h2>
+                <div class="card-info">
+                    <strong>Tunnel Privé Virtuel.</strong><br><br>
+                    Il crée un tunnel chiffré entre vous et un serveur distant. Votre Fournisseur d'Accès (FAI) ne voit que du bruit illisible. Pour les sites web, votre requête semble venir du serveur VPN, masquant votre véritable <span class="tech-term">Adresse IP</span> et localisation.<br>
+                    <em style="color:#00d2d3; display:block; margin-top:10px;">🕵️‍♂️ Indispensable sur les Wi-Fi publics.</em>
+                </div>
+            </div>
+        </div>
+
+        <!-- 8. DDOS (NOUVEAU) -->
+        <div class="card ddos">
+            <div class="card-content">
+                <div class="card-icon">🧟</div>
+                <h2>Attaque DDoS</h2>
+                <div class="card-info">
+                    <strong>Déni de Service Distribué.</strong><br><br>
+                    L'attaquant contrôle une armée d'objets connectés infectés (Botnet : caméras, frigos...). Il ordonne à ces milliers de "zombies" de se connecter simultanément à une cible. Le serveur cible, submergé par le trafic, s'écroule sous la charge.<br>
+                    <em style="color:#ff3f34; display:block; margin-top:10px;">⚠️ L'embouteillage numérique total.</em>
                 </div>
             </div>
         </div>
@@ -235,7 +292,6 @@
     <div class="footer">Passez la souris sur les cartes pour décrypter les données.</div>
 
     <script>
-        // Le script magique qui gère la position de la souris
         const cardsContainer = document.getElementById("cards");
 
         cardsContainer.onmousemove = e => {
@@ -244,7 +300,6 @@
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
 
-                // On envoie les coordonnées X et Y à chaque carte via des variables CSS
                 card.style.setProperty("--mouse-x", `${x}px`);
                 card.style.setProperty("--mouse-y", `${y}px`);
             }

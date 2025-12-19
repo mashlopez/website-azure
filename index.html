@@ -1,288 +1,655 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { initializeApp } from 'firebase/app';
-import { 
-  getAuth, 
-  signInAnonymously, 
-  onAuthStateChanged,
-  signInWithCustomToken 
-} from 'firebase/auth';
-import { 
-  getFirestore, 
-  collection, 
-  doc, 
-  onSnapshot, 
-  setDoc, 
-  updateDoc, 
-  increment, 
-  getDoc
-} from 'firebase/firestore';
-import { Crown, Zap, Users, Shield, Sword, RefreshCw } from 'lucide-react';
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Néon Turbo Racing</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
 
-// --- Configuration Firebase ---
-// Ces variables sont fournies par l'environnement d'exécution
-const getFirebaseConfig = () => {
-  try {
-    // @ts-ignore
-    return JSON.parse(__firebase_config);
-  } catch (e) {
-    return null;
-  }
-};
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"></script>
 
-const getAppId = () => {
-  try {
-    // @ts-ignore
-    return typeof __app_id !== 'undefined' ? __app_id : 'default-app';
-  } catch (e) {
-    return 'default-app';
-  }
-};
-
-// --- Composant Principal ---
-export default function App() {
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [gameState, setGameState] = useState({ redScore: 0, blueScore: 0 });
-  const [myTeam, setMyTeam] = useState<'RED' | 'BLUE' | null>(null);
-  const [localClicks, setLocalClicks] = useState(0); // Pour effet visuel
-  const [error, setError] = useState<string | null>(null);
-
-  // Initialisation Firebase refs
-  const appRef = useRef<any>(null);
-  const authRef = useRef<any>(null);
-  const dbRef = useRef<any>(null);
-
-  // 1. Initialisation & Authentification
-  useEffect(() => {
-    const initApp = async () => {
-      const config = getFirebaseConfig();
-      if (!config) {
-        setError("Configuration Firebase manquante.");
-        setLoading(false);
-        return;
-      }
-
-      appRef.current = initializeApp(config);
-      authRef.current = getAuth(appRef.current);
-      dbRef.current = getFirestore(appRef.current);
-
-      try {
-        // @ts-ignore
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-             // @ts-ignore
-            await signInWithCustomToken(authRef.current, __initial_auth_token);
-        } else {
-            await signInAnonymously(authRef.current);
+    <style>
+        body {
+            font-family: 'Orbitron', sans-serif;
+            background-color: #0f172a;
+            color: #e2e8f0;
+            overflow-x: hidden;
+            touch-action: manipulation; /* Improves touch response */
         }
-      } catch (err) {
-        console.error("Erreur Auth:", err);
-        setError("Impossible de se connecter au serveur de jeu.");
-      }
-    };
 
-    initApp();
+        .neon-text {
+            text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 20px #0ff, 0 0 30px #0ff, 0 0 40px #0ff;
+        }
 
-    if (authRef.current) {
-      const unsubscribe = onAuthStateChanged(authRef.current, (u) => {
-        setUser(u);
-        setLoading(false);
-      });
-      return () => unsubscribe();
-    }
-  }, []);
+        .neon-border {
+            box-shadow: 0 0 5px #0ff, 0 0 10px #0ff;
+        }
 
-  // 2. Synchronisation des données (Firestore Listener)
-  useEffect(() => {
-    if (!user || !dbRef.current) return;
+        .car-track {
+            background: repeating-linear-gradient(
+                90deg,
+                #1e293b,
+                #1e293b 40px,
+                #334155 40px,
+                #334155 80px
+            );
+        }
 
-    const appId = getAppId();
-    // Chemin public pour que tout le monde partage le même état
-    const gameDocRef = doc(dbRef.current, 'artifacts', appId, 'public', 'data', 'pixel_war_state');
+        /* Animation pour le bouton "Tap" */
+        @keyframes pulse-fast {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .tap-active {
+            animation: pulse-fast 0.1s ease-in-out;
+            background-color: #ef4444 !important;
+        }
 
-    const unsubscribe = onSnapshot(gameDocRef, (docSnap) => {
-      if (docSnap.exists()) {
-        setGameState(docSnap.data() as any);
-      } else {
-        // Créer le document s'il n'existe pas
-        setDoc(gameDocRef, { redScore: 0, blueScore: 0 }, { merge: true });
-      }
-    }, (err) => {
-      console.error("Erreur Sync:", err);
-      // Ne pas bloquer l'UI, juste loguer
-    });
+        .finish-line {
+            background-image: linear-gradient(45deg, #000 25%, transparent 25%), 
+                              linear-gradient(-45deg, #000 25%, transparent 25%), 
+                              linear-gradient(45deg, transparent 75%, #000 75%), 
+                              linear-gradient(-45deg, transparent 75%, #000 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            background-color: #fff;
+        }
+        
+        /* Modal simple */
+        .modal {
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(5px);
+        }
 
-    return () => unsubscribe();
-  }, [user]);
+        .hidden-screen {
+            display: none;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-col items-center justify-center bg-slate-900">
 
-  // 3. Logique de Jeu
-  const handleClick = async () => {
-    if (!user || !myTeam || !dbRef.current) return;
+    <!-- APP CONTAINER -->
+    <div id="app" class="w-full max-w-4xl h-full flex flex-col relative overflow-hidden">
+        
+        <!-- HEADER -->
+        <header class="p-4 border-b border-cyan-500 bg-slate-800 flex justify-between items-center z-10">
+            <h1 class="text-2xl md:text-3xl font-bold text-cyan-400 italic tracking-widest">NEON <span class="text-white">RACE</span></h1>
+            <div id="user-info" class="text-xs text-slate-400">Connexion...</div>
+        </header>
 
-    // Effet visuel immédiat (optimistic UI local partiel)
-    setLocalClicks(prev => prev + 1);
+        <!-- ERROR MESSAGE -->
+        <div id="error-box" class="hidden absolute top-20 left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-4 py-2 rounded shadow-lg z-50 transition-opacity">
+            Erreur
+        </div>
 
-    // Vibration mobile
-    if (navigator.vibrate) navigator.vibrate(50);
+        <!-- SCREEN 1: LOGIN / PSEUDO -->
+        <section id="screen-login" class="flex-grow flex flex-col items-center justify-center p-6 space-y-6">
+            <div class="text-center space-y-2">
+                <h2 class="text-4xl font-bold text-white mb-8">PRÊT À ROULER ?</h2>
+                <input type="text" id="input-pseudo" placeholder="Votre Pseudo" maxlength="12"
+                    class="w-full max-w-xs bg-slate-800 border-2 border-cyan-500 text-center text-xl p-3 rounded text-white focus:outline-none focus:shadow-[0_0_15px_#06b6d4] placeholder-slate-500 uppercase">
+            </div>
+            
+            <div class="flex flex-col space-y-3 w-full max-w-xs">
+                <button onclick="ui.createGame()" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-6 rounded shadow-[0_0_10px_#06b6d4] transition transform hover:scale-105">
+                    CRÉER UNE COURSE
+                </button>
+                <div class="flex space-x-2">
+                    <input type="text" id="input-room-code" placeholder="CODE SALLE" 
+                        class="flex-grow bg-slate-800 border border-slate-600 text-center p-3 rounded text-white uppercase focus:border-cyan-500 focus:outline-none">
+                    <button onclick="ui.joinGame()" class="bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 px-4 rounded shadow-[0_0_10px_#9333ea] transition">
+                        REJOINDRE
+                    </button>
+                </div>
+            </div>
+        </section>
 
-    const appId = getAppId();
-    const gameDocRef = doc(dbRef.current, 'artifacts', appId, 'public', 'data', 'pixel_war_state');
+        <!-- SCREEN 2: LOBBY -->
+        <section id="screen-lobby" class="hidden-screen flex-grow flex flex-col items-center p-6">
+            <div class="bg-slate-800 p-6 rounded-lg border border-cyan-500 w-full max-w-md text-center shadow-2xl">
+                <h3 class="text-xl text-slate-400 mb-2">CODE DE LA SALLE</h3>
+                <div id="lobby-code-display" class="text-5xl font-mono text-cyan-400 font-bold mb-6 select-all cursor-pointer bg-slate-900 p-2 rounded" onclick="ui.copyCode()">
+                    ----
+                </div>
+                
+                <h4 class="text-left text-sm text-slate-500 uppercase mb-2">Pilotes dans le stand :</h4>
+                <ul id="lobby-player-list" class="space-y-2 mb-6 text-left min-h-[100px]">
+                    <!-- Player items injected here -->
+                </ul>
 
-    try {
-      // Mise à jour atomique dans Firestore
-      await updateDoc(gameDocRef, {
-        [myTeam === 'RED' ? 'redScore' : 'blueScore']: increment(1)
-      });
-    } catch (err) {
-      console.error("Erreur lors du clic:", err);
-    }
-  };
+                <div id="host-controls" class="hidden">
+                    <button onclick="game.startGame()" class="w-full bg-green-500 hover:bg-green-400 text-black font-black text-xl py-4 rounded shadow-[0_0_15px_#22c55e] transition animate-pulse">
+                        LANCER LA COURSE
+                    </button>
+                </div>
+                <div id="guest-controls" class="text-yellow-400 animate-pulse hidden">
+                    En attente de l'hôte...
+                </div>
+            </div>
+        </section>
 
-  // Calculs d'affichage
-  const totalScore = gameState.redScore + gameState.blueScore;
-  const redPercent = totalScore === 0 ? 50 : (gameState.redScore / totalScore) * 100;
-  const bluePercent = totalScore === 0 ? 50 : (gameState.blueScore / totalScore) * 100;
+        <!-- SCREEN 3: GAME -->
+        <section id="screen-game" class="hidden-screen flex-grow flex flex-col relative bg-slate-900">
+            
+            <!-- Game Status Bar -->
+            <div class="absolute top-0 w-full bg-black/50 p-2 flex justify-center z-20 backdrop-blur-sm">
+                <span id="game-status-text" class="text-2xl font-bold text-white neon-text">PRÊT ?</span>
+            </div>
 
-  // --- Rendu ---
+            <!-- Track Area -->
+            <div id="track-container" class="flex-grow flex flex-col justify-center space-y-4 p-4 overflow-y-auto">
+                <!-- Tracks generated dynamically -->
+            </div>
 
-  if (loading) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center bg-gray-900 text-white">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-        <span className="ml-4">Chargement du champ de bataille...</span>
-      </div>
-    );
-  }
+            <!-- Controls (Mobile/Desktop) -->
+            <div class="h-32 bg-slate-800 border-t border-slate-700 flex items-center justify-center p-4 relative z-30">
+                <button id="boost-btn" 
+                    onmousedown="game.inputDown()" onmouseup="game.inputUp()" 
+                    ontouchstart="game.inputDown()" ontouchend="game.inputUp()"
+                    class="w-full h-full max-w-md bg-gradient-to-t from-red-700 to-red-500 rounded-xl border-b-8 border-red-900 text-white font-black text-2xl active:border-b-0 active:translate-y-2 transition-all shadow-[0_0_20px_#ef4444]">
+                    TAP / ESPACE
+                </button>
+                <div class="absolute right-4 bottom-4 text-xs text-slate-500 hidden md:block">
+                    Appuie sur <span class="border border-slate-500 px-1 rounded">ESPACE</span> rapidement !
+                </div>
+            </div>
+        </section>
 
-  if (error) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center bg-red-900 text-white p-4 text-center">
-        <p>{error}</p>
-      </div>
-    );
-  }
+        <!-- SCREEN 4: RESULTS -->
+        <section id="screen-results" class="hidden-screen absolute inset-0 bg-black/90 z-50 flex flex-col items-center justify-center p-6 text-center">
+            <h2 class="text-5xl font-bold text-yellow-400 mb-2 neon-text">FINISH !</h2>
+            <div id="winner-display" class="text-2xl text-white mb-8">Le vainqueur est...</div>
+            
+            <div class="bg-slate-800 p-6 rounded-lg w-full max-w-md border border-slate-600">
+                <h3 class="text-lg text-slate-400 mb-4 border-b border-slate-600 pb-2">CLASSEMENT</h3>
+                <ul id="results-list" class="space-y-3">
+                    <!-- Results injected here -->
+                </ul>
+            </div>
 
-  // Écran de sélection d'équipe
-  if (!myTeam) {
-    return (
-      <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-4 font-sans text-slate-100">
-        <div className="max-w-md w-full bg-slate-800 rounded-2xl shadow-2xl p-8 border border-slate-700">
-          <h1 className="text-4xl font-black text-center mb-2 bg-gradient-to-r from-red-500 to-blue-500 bg-clip-text text-transparent">
-            PIXEL WAR
-          </h1>
-          <p className="text-center text-slate-400 mb-8">
-            Rejoignez une faction et dominez le serveur en temps réel.
-          </p>
-
-          <div className="grid grid-cols-2 gap-4">
-            <button
-              onClick={() => setMyTeam('RED')}
-              className="group relative flex flex-col items-center justify-center p-6 bg-red-900/30 border-2 border-red-600 rounded-xl hover:bg-red-900/50 transition-all hover:scale-105 active:scale-95"
-            >
-              <Sword className="w-12 h-12 text-red-500 mb-2 group-hover:rotate-12 transition-transform" />
-              <span className="text-xl font-bold text-red-500">ROUGE</span>
-              <span className="text-xs text-red-300/60 mt-1">Force & Fureur</span>
+            <button onclick="ui.resetToMenu()" class="mt-8 bg-slate-700 hover:bg-slate-600 text-white px-6 py-3 rounded border border-slate-500">
+                Retour au Menu
             </button>
+        </section>
 
-            <button
-              onClick={() => setMyTeam('BLUE')}
-              className="group relative flex flex-col items-center justify-center p-6 bg-blue-900/30 border-2 border-blue-600 rounded-xl hover:bg-blue-900/50 transition-all hover:scale-105 active:scale-95"
-            >
-              <Shield className="w-12 h-12 text-blue-500 mb-2 group-hover:-rotate-12 transition-transform" />
-              <span className="text-xl font-bold text-blue-500">BLEU</span>
-              <span className="text-xs text-blue-300/60 mt-1">Honneur & Paix</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Écran de jeu
-  return (
-    <div className="flex flex-col h-screen bg-slate-900 overflow-hidden select-none">
-      {/* Header / Scoreboard */}
-      <header className="flex-none p-4 bg-slate-800/50 backdrop-blur-md border-b border-slate-700 z-10">
-        <div className="flex justify-between items-center max-w-4xl mx-auto mb-2">
-          <div className="flex flex-col items-start">
-            <span className="text-red-500 font-bold text-2xl drop-shadow-lg">{gameState.redScore.toLocaleString()}</span>
-            <span className="text-xs text-red-400 uppercase tracking-widest">Team Rouge</span>
-          </div>
-          
-          <div className="flex flex-col items-center">
-             <div className="bg-slate-900 rounded-full px-3 py-1 border border-slate-700">
-               <span className="text-slate-400 text-xs font-mono">VS</span>
-             </div>
-          </div>
-
-          <div className="flex flex-col items-end">
-            <span className="text-blue-500 font-bold text-2xl drop-shadow-lg">{gameState.blueScore.toLocaleString()}</span>
-            <span className="text-xs text-blue-400 uppercase tracking-widest">Team Bleu</span>
-          </div>
-        </div>
-
-        {/* Barre de progression */}
-        <div className="relative h-6 w-full max-w-4xl mx-auto bg-slate-700 rounded-full overflow-hidden shadow-inner border border-slate-600">
-          <div 
-            className="absolute top-0 left-0 h-full bg-gradient-to-r from-red-600 to-red-400 transition-all duration-300 ease-out flex items-center justify-start pl-2"
-            style={{ width: `${redPercent}%` }}
-          >
-            {redPercent > 10 && <Sword className="w-3 h-3 text-red-900/50" />}
-          </div>
-          <div 
-            className="absolute top-0 right-0 h-full bg-gradient-to-l from-blue-600 to-blue-400 transition-all duration-300 ease-out flex items-center justify-end pr-2"
-            style={{ width: `${bluePercent}%` }}
-          >
-            {bluePercent > 10 && <Shield className="w-3 h-3 text-blue-900/50" />}
-          </div>
-          
-          {/* Ligne centrale */}
-          <div className="absolute top-0 bottom-0 left-1/2 w-0.5 bg-white/30 z-10 -translate-x-1/2"></div>
-        </div>
-      </header>
-
-      {/* Zone d'action */}
-      <main className="flex-grow relative flex items-center justify-center p-4">
-        {/* Background effects based on dominance */}
-        <div className={`absolute inset-0 opacity-20 transition-colors duration-1000 ${
-          gameState.redScore > gameState.blueScore ? 'bg-red-900' : 
-          gameState.blueScore > gameState.redScore ? 'bg-blue-900' : 'bg-slate-900'
-        }`}></div>
-
-        <button
-          onClick={handleClick}
-          className={`
-            relative z-10 w-64 h-64 rounded-full shadow-[0_0_60px_rgba(0,0,0,0.5)]
-            flex flex-col items-center justify-center
-            transition-all duration-75 transform active:scale-90 active:shadow-[0_0_20px_rgba(0,0,0,0.5)]
-            border-8 
-            ${myTeam === 'RED' 
-              ? 'bg-gradient-to-br from-red-500 to-red-700 border-red-400 hover:from-red-400 hover:to-red-600 shadow-red-500/20' 
-              : 'bg-gradient-to-br from-blue-500 to-blue-700 border-blue-400 hover:from-blue-400 hover:to-blue-600 shadow-blue-500/20'
-            }
-          `}
-        >
-          <Zap className="w-24 h-24 text-white drop-shadow-md" fill="currentColor" />
-          <span className="mt-2 text-white font-black text-xl uppercase tracking-wider">
-            Attaquer !
-          </span>
-          <span className="absolute -bottom-12 text-slate-400 text-sm font-mono opacity-60">
-            Tes clics : {localClicks}
-          </span>
-        </button>
-      </main>
-
-      {/* Footer / Controls */}
-      <footer className="flex-none p-4 bg-slate-900 text-center text-slate-500 text-xs">
-        <div className="flex justify-center gap-4 mb-2">
-            <button 
-                onClick={() => setMyTeam(null)}
-                className="flex items-center gap-1 hover:text-white transition-colors"
-            >
-                <RefreshCw className="w-3 h-3" /> Changer d'équipe
-            </button>
-        </div>
-        <p>Multijoueur en temps réel via Firebase</p>
-      </footer>
     </div>
-  );
-}
+
+    <script type="module">
+        // --- 1. CONFIGURATION & IMPORTS ---
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, onSnapshot, updateDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global variables provided by environment
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // --- 2. GAME STATE ---
+        const state = {
+            user: null,
+            pseudo: "Pilote",
+            gameId: null,
+            isHost: false,
+            localProgress: 0,
+            hasFinished: false,
+            gameActive: false,
+            players: {}, // Local copy of players data
+            lastPushTime: 0,
+            avatars: ["🏎️", "🚓", "🚕", "🚙", "🚑", "🚒", "🚐", "🛻"],
+            myAvatar: "🏎️"
+        };
+
+        // --- 3. DOM ELEMENTS ---
+        const screens = {
+            login: document.getElementById('screen-login'),
+            lobby: document.getElementById('screen-lobby'),
+            game: document.getElementById('screen-game'),
+            results: document.getElementById('screen-results')
+        };
+        const els = {
+            pseudoInput: document.getElementById('input-pseudo'),
+            roomInput: document.getElementById('input-room-code'),
+            lobbyCode: document.getElementById('lobby-code-display'),
+            lobbyList: document.getElementById('lobby-player-list'),
+            hostControls: document.getElementById('host-controls'),
+            guestControls: document.getElementById('guest-controls'),
+            trackContainer: document.getElementById('track-container'),
+            statusText: document.getElementById('game-status-text'),
+            resultsList: document.getElementById('results-list'),
+            winnerDisplay: document.getElementById('winner-display'),
+            boostBtn: document.getElementById('boost-btn'),
+            userInfo: document.getElementById('user-info')
+        };
+
+        // --- 4. UTILS & UI MANAGER ---
+        const utils = {
+            showScreen: (screenName) => {
+                Object.values(screens).forEach(el => el.classList.add('hidden-screen'));
+                screens[screenName].classList.remove('hidden-screen');
+            },
+            showError: (msg) => {
+                const errBox = document.getElementById('error-box');
+                errBox.textContent = msg;
+                errBox.classList.remove('hidden');
+                setTimeout(() => errBox.classList.add('hidden'), 3000);
+            },
+            generateCode: () => Math.random().toString(36).substring(2, 6).toUpperCase(),
+            getRandomAvatar: () => state.avatars[Math.floor(Math.random() * state.avatars.length)]
+        };
+
+        // --- 5. CORE LOGIC ---
+
+        // AUTHENTICATION
+        const initAuth = async () => {
+            try {
+                // Check if we have a custom token first (standard environment practice)
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Auth failed", error);
+                utils.showError("Erreur de connexion au serveur.");
+            }
+        };
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                state.user = user;
+                els.userInfo.textContent = `ID: ${user.uid.substring(0, 5)}`;
+                // Restore pseudo if saved locally (optional, skipping for simplicity)
+            }
+        });
+
+        // FIRESTORE PATHS
+        const getGameRef = (gid) => doc(db, 'artifacts', appId, 'public', 'data', 'races', gid);
+
+        // UI ACTIONS EXPORTED TO WINDOW
+        window.ui = {
+            createGame: async () => {
+                if (!state.user) return utils.showError("Non connecté.");
+                const pseudo = els.pseudoInput.value.trim() || "Pilote " + Math.floor(Math.random()*100);
+                state.pseudo = pseudo;
+                state.myAvatar = utils.getRandomAvatar();
+                state.isHost = true;
+                
+                const gameId = utils.generateCode();
+                state.gameId = gameId;
+
+                const initialData = {
+                    status: 'waiting', // waiting, racing, finished
+                    host: state.user.uid,
+                    createdAt: Date.now(),
+                    players: {
+                        [state.user.uid]: {
+                            name: pseudo,
+                            avatar: state.myAvatar,
+                            progress: 0,
+                            finished: false,
+                            finishTime: 0
+                        }
+                    }
+                };
+
+                try {
+                    await setDoc(getGameRef(gameId), initialData);
+                    startGameListener(gameId);
+                    utils.showScreen('lobby');
+                    els.lobbyCode.textContent = gameId;
+                } catch (e) {
+                    console.error(e);
+                    utils.showError("Erreur création salle: " + e.message);
+                }
+            },
+
+            joinGame: async () => {
+                if (!state.user) return utils.showError("Non connecté.");
+                const code = els.roomInput.value.trim().toUpperCase();
+                const pseudo = els.pseudoInput.value.trim() || "Pilote " + Math.floor(Math.random()*100);
+                
+                if (code.length < 2) return utils.showError("Code invalide.");
+                
+                state.pseudo = pseudo;
+                state.gameId = code;
+                state.myAvatar = utils.getRandomAvatar();
+                state.isHost = false;
+
+                const gameRef = getGameRef(code);
+                
+                try {
+                    const docSnap = await getDoc(gameRef);
+                    if (!docSnap.exists()) return utils.showError("Salle introuvable.");
+                    
+                    const data = docSnap.data();
+                    if (data.status !== 'waiting') return utils.showError("La course a déjà commencé !");
+
+                    // Join logic: update only my field
+                    // Note: Firestore map updates with dot notation require exact path
+                    const playerField = `players.${state.user.uid}`;
+                    await updateDoc(gameRef, {
+                        [playerField]: {
+                            name: pseudo,
+                            avatar: state.myAvatar,
+                            progress: 0,
+                            finished: false,
+                            finishTime: 0
+                        }
+                    });
+
+                    startGameListener(code);
+                    utils.showScreen('lobby');
+                    els.lobbyCode.textContent = code;
+
+                } catch (e) {
+                    console.error(e);
+                    utils.showError("Erreur connexion: " + e.message);
+                }
+            },
+
+            copyCode: () => {
+                const code = els.lobbyCode.textContent;
+                navigator.clipboard.writeText(code).then(() => {
+                    els.lobbyCode.classList.add('text-green-400');
+                    setTimeout(() => els.lobbyCode.classList.remove('text-green-400'), 200);
+                });
+            },
+
+            resetToMenu: () => {
+                // Simple reload or reset state
+                location.reload(); 
+            }
+        };
+
+        // GAME LOGIC EXPORTED
+        window.game = {
+            startGame: async () => {
+                if (!state.isHost) return;
+                const gameRef = getGameRef(state.gameId);
+                await updateDoc(gameRef, { status: 'starting' });
+                
+                // Countdown logic handled by listener mostly, but let's force start after 3s
+                setTimeout(async () => {
+                    await updateDoc(gameRef, { status: 'racing', startTime: Date.now() });
+                }, 3000);
+            },
+
+            inputDown: (e) => {
+                if (e) e.preventDefault(); // Prevent double firing on touch
+                if (!state.gameActive || state.hasFinished) return;
+                
+                els.boostBtn.classList.add('tap-active');
+                
+                // Add speed
+                state.localProgress += 2.5; // Each tap is 2.5% of track
+                
+                if (state.localProgress >= 100) {
+                    state.localProgress = 100;
+                    finishRace();
+                }
+
+                updateVisuals();
+                queueProgressUpdate();
+            },
+
+            inputUp: () => {
+                els.boostBtn.classList.remove('tap-active');
+            }
+        };
+
+        // --- 6. GAME LOOP & SYNC ---
+
+        let unsubscribe = null;
+        let updateTimeout = null;
+
+        function startGameListener(gameId) {
+            if (unsubscribe) unsubscribe();
+
+            unsubscribe = onSnapshot(getGameRef(gameId), (doc) => {
+                if (!doc.exists()) {
+                    utils.showError("Le salon a été fermé.");
+                    setTimeout(() => location.reload(), 2000);
+                    return;
+                }
+
+                const data = doc.data();
+                state.players = data.players || {};
+                
+                handleGameState(data.status, data);
+                renderLobby(state.players); // Always update lobby list if in lobby
+                if(data.status === 'racing' || data.status === 'finished') {
+                    renderGame(state.players);
+                }
+            }, (error) => {
+                console.error("Sync error:", error);
+                utils.showError("Perte de connexion...");
+            });
+        }
+
+        function handleGameState(status, data) {
+            // Screen switching logic
+            if (status === 'waiting') {
+                if (!els.lobbyCode.offsetParent) utils.showScreen('lobby');
+                
+                if (state.isHost) {
+                    els.hostControls.classList.remove('hidden');
+                    els.guestControls.classList.add('hidden');
+                } else {
+                    els.hostControls.classList.add('hidden');
+                    els.guestControls.classList.remove('hidden');
+                }
+            } else if (status === 'starting') {
+                utils.showScreen('game');
+                els.statusText.textContent = "3... 2... 1...";
+                els.statusText.className = "text-4xl font-bold text-yellow-400 neon-text animate-pulse";
+            } else if (status === 'racing') {
+                if (!state.gameActive && !state.hasFinished) {
+                    utils.showScreen('game');
+                    state.gameActive = true;
+                    els.statusText.textContent = "GO ! TAPOTEZ !";
+                    els.statusText.className = "text-4xl font-bold text-green-500 neon-text";
+                    // Enable keyboard
+                    document.addEventListener('keydown', handleKeyboard);
+                }
+                
+                // Check if everyone finished
+                const allFinished = Object.values(state.players).every(p => p.finished);
+                if (allFinished && state.isHost && data.status !== 'finished') {
+                    updateDoc(getGameRef(state.gameId), { status: 'finished' });
+                }
+
+            } else if (status === 'finished') {
+                state.gameActive = false;
+                document.removeEventListener('keydown', handleKeyboard);
+                if (els.resultsList.offsetParent === null) {
+                    showResults(state.players);
+                }
+            }
+        }
+
+        function handleKeyboard(e) {
+            if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'ArrowRight') {
+                game.inputDown();
+                setTimeout(game.inputUp, 100); // Visual feedback reset
+            }
+        }
+
+        // THROTTLED FIRESTORE UPDATES
+        // We only write to DB every 500ms max to avoid rate limiting, 
+        // unless we finished (immediate write).
+        function queueProgressUpdate() {
+            const now = Date.now();
+            if (state.hasFinished) return; // Don't update if finished (already handled)
+
+            if (now - state.lastPushTime > 500) {
+                pushProgress();
+            } else {
+                if (updateTimeout) clearTimeout(updateTimeout);
+                updateTimeout = setTimeout(pushProgress, 500);
+            }
+        }
+
+        async function pushProgress() {
+            state.lastPushTime = Date.now();
+            const gameRef = getGameRef(state.gameId);
+            const playerPath = `players.${state.user.uid}.progress`;
+            
+            try {
+                await updateDoc(gameRef, {
+                    [playerPath]: state.localProgress
+                });
+            } catch (e) {
+                console.warn("Update skipped", e);
+            }
+        }
+
+        async function finishRace() {
+            state.hasFinished = true;
+            state.gameActive = false;
+            els.statusText.textContent = "ARRIVÉE !";
+            
+            const gameRef = getGameRef(state.gameId);
+            const basePath = `players.${state.user.uid}`;
+            
+            await updateDoc(gameRef, {
+                [`${basePath}.progress`]: 100,
+                [`${basePath}.finished`]: true,
+                [`${basePath}.finishTime`]: Date.now()
+            });
+        }
+
+        // --- 7. RENDERING ---
+
+        function renderLobby(players) {
+            els.lobbyList.innerHTML = '';
+            Object.values(players).forEach(p => {
+                const li = document.createElement('li');
+                li.className = "flex items-center justify-between bg-slate-900 p-3 rounded border border-slate-700";
+                li.innerHTML = `
+                    <span class="font-bold text-white flex items-center gap-2 text-lg">
+                        <span>${p.avatar}</span> ${p.name}
+                    </span>
+                    <span class="text-xs text-green-400">Prêt</span>
+                `;
+                els.lobbyList.appendChild(li);
+            });
+        }
+
+        // Initial creation of track lanes to avoid re-creating DOM elements constantly
+        let tracksCreated = false;
+        
+        function renderGame(players) {
+            // Sort players by ID to ensure consistent lane order
+            const pIds = Object.keys(players).sort();
+            
+            if (!tracksCreated || els.trackContainer.children.length !== pIds.length) {
+                els.trackContainer.innerHTML = '';
+                pIds.forEach(pid => {
+                    const p = players[pid];
+                    const isMe = pid === state.user.uid;
+                    
+                    const lane = document.createElement('div');
+                    lane.id = `lane-${pid}`;
+                    lane.className = `relative w-full h-16 bg-slate-800 rounded border-b-2 border-slate-600 car-track overflow-hidden ${isMe ? 'border-l-4 border-l-cyan-400 bg-slate-700' : ''}`;
+                    
+                    // Lane number/name
+                    const nameLabel = document.createElement('div');
+                    nameLabel.className = "absolute left-2 top-1 text-[10px] text-slate-400 z-10 font-bold uppercase tracking-wider";
+                    nameLabel.innerText = p.name;
+                    lane.appendChild(nameLabel);
+
+                    // Finish line
+                    const finish = document.createElement('div');
+                    finish.className = "absolute right-0 top-0 bottom-0 w-8 finish-line z-0";
+                    lane.appendChild(finish);
+
+                    // Car
+                    const car = document.createElement('div');
+                    car.id = `car-${pid}`;
+                    car.className = "absolute top-1/2 transform -translate-y-1/2 text-3xl transition-all duration-300 ease-linear z-10";
+                    car.style.left = "0%";
+                    car.textContent = p.avatar;
+                    // Mirror car to face right
+                    car.style.transform = "translateY(-50%) scaleX(-1)"; 
+                    
+                    lane.appendChild(car);
+                    els.trackContainer.appendChild(lane);
+                });
+                tracksCreated = true;
+            }
+
+            // Update positions
+            pIds.forEach(pid => {
+                const p = players[pid];
+                const car = document.getElementById(`car-${pid}`);
+                // If it's me, use local instant progress for smoothness, else DB progress
+                const progress = (pid === state.user.uid) ? state.localProgress : p.progress;
+                
+                // Visual clamp 0-92% (to stop before running off div)
+                const visualProgress = Math.min(progress, 92);
+                
+                if (car) {
+                    car.style.left = `${visualProgress}%`;
+                    // Add nitro effect if moving fast (optional logic)
+                }
+            });
+        }
+        
+        // Use this to force update my own car visually instantly without waiting for DB roundtrip
+        function updateVisuals() {
+            const car = document.getElementById(`car-${state.user.uid}`);
+            if (car) {
+                const visualProgress = Math.min(state.localProgress, 92);
+                car.style.left = `${visualProgress}%`;
+            }
+        }
+
+        function showResults(players) {
+            utils.showScreen('results');
+            els.resultsList.innerHTML = '';
+            
+            // Sort by finishTime (asc) then progress (desc)
+            const sorted = Object.values(players).sort((a, b) => {
+                if (a.finished && b.finished) return a.finishTime - b.finishTime;
+                if (a.finished) return -1;
+                if (b.finished) return 1;
+                return b.progress - a.progress;
+            });
+
+            if (sorted.length > 0) {
+                els.winnerDisplay.textContent = `🏆 ${sorted[0].name} 🏆`;
+            }
+
+            sorted.forEach((p, index) => {
+                const li = document.createElement('li');
+                li.className = "flex justify-between items-center bg-slate-700 p-3 rounded";
+                const rank = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`;
+                li.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold text-yellow-400 w-8">${rank}</span>
+                        <span class="text-white">${p.name}</span>
+                    </div>
+                    <span class="text-slate-300 text-sm">${p.finished ? 'Terminé' : Math.floor(p.progress) + '%'}</span>
+                `;
+                els.resultsList.appendChild(li);
+            });
+        }
+
+        // --- INIT ---
+        initAuth();
+
+    </script>
+</body>
+</html>
